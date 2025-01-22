@@ -1,0 +1,16 @@
+{
+    "bpi": {
+        "2025-01-11": 95960.966,
+        "2025-01-12": 95319.2861,
+        "2025-01-13": 95571.7363,
+        "2025-01-14": 97494.1832,
+        "2025-01-15": 100554.7633,
+        "2025-01-16": 100287.3106,
+        "2025-01-17": 103674.7035
+    },
+    "disclaimer": "This data was produced from the CoinDesk Bitcoin Price Index. BPI value data returned as USD.",
+    "time": {
+        "updated": "Jan 21, 2025 00:03:00 UTC",
+        "updatedISO": "2025-01-21T00:03:00+00:00"
+    }
+}

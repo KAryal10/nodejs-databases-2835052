@@ -1,23 +1,86 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-empty-function */
+const { MongoClient } = require('mongodb');
 const CoinAPI = require('../CoinAPI');
 
 class MongoBackend {
 
   constructor() {
     this.coinAPI = new CoinAPI();
+    this.url = 'mongodb://localhost:37017/maxcoin';
+    this.client = null;
+    this.collection = null;
+
   }
 
-  async connect() {}
+  async connect() {
+    const mongoClient = new MongoClient(this.url, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true
+    });
+    this.client = await mongoClient.connect();
+    this.collection = this.client.db('maxcoin').collection('values');
+    return this.client;
+  }
 
-  async disconnect() {}
+  async disconnect() {
+    if (this.client) {
+      await this.client.close();
+    }
+    return false;
+  }
 
-  async insert() {}
+  async insert() {
+    const data = await this.coinAPI.fetch();
+    const documents = [];
+    Object.entries(data.bpi).forEach((entry) => {
+      documents.push({
+        date: entry[0],
+        value: entry[1]
+      });
+    });
+    return this.collection.insertMany(documents);
+  }
 
-  async getMax() {}
+  async getMax() {
+    return this.collection.findOne({}, { sort: { value: -1 } });
+  }
 
-  async max() {}
+  async max() {
+    console.info('Connecting to MongoDB...');
+    console.time('Mongodb connect');
+    const client = await this.connect();
+    if (client.topology && client.topology.isConnected()) {
+      console.info('Connected to MongoDB');
+    }
+    else {
+      throw new Error('Failed to connect to MongoDB');
+    }
+    console.timeEnd('Mongodb connect');
+
+    console.info('inserting data...');
+    console.time('Mongodb insert');
+    const insertResult = await this.insert();
+    console.timeEnd('Mongodb insert');
+
+    console.info(`Inserted ${insertResult.insertedCount} documents`);
+
+    console.info('fetching max value...');
+    console.time('Mongodb fetch max');
+    const doc = await this.getMax();
+    console.timeEnd('Mongodb fetch max');
+
+    console.info('disconnecting from MongoDB...');
+    console.time('Mongodb disconnect');
+    await this.disconnect();
+    console.timeEnd('Mongodb disconnect');
+
+    return {
+      date: doc.date,
+      value: doc.value
+    }
+  }
 }
 
 module.exports = MongoBackend;
