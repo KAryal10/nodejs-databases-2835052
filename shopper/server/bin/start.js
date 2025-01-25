@@ -1,9 +1,32 @@
 #!/usr/bin/env node
 
 const http = require('http');
+const mongoose = require('mongoose');
+const Redis = require('ioredis');
 
 const config = require('../config');
 const App = require('../app');
+
+async function connectToMongoose() {
+  return mongoose.connect(config.mongoDB.url);
+}
+
+function connectToRedis() {
+  const redis = new Redis(config.redis.port);
+  redis.on('connect', () => {
+    console.info('Connected to Redis');
+  });
+
+  redis.on('error', (err) => {
+    console.error('Redis error', err);
+    process.exit(1);
+  });
+
+  return redis;
+}
+
+const redis = connectToRedis();
+config.redis.client = redis;
 
 /* Logic to start the application */
 const app = App(config);
@@ -45,4 +68,10 @@ function onListening() {
 server.on('error', onError);
 server.on('listening', onListening);
 
-server.listen(port);
+connectToMongoose().then(() => {
+  console.info('Connected to MongoDB');
+  server.listen(port);
+}).catch((err) => {
+  console.error('Error connecting to MongoDB', err);
+});
+

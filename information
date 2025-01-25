@@ -1,0 +1,11 @@
+Mongoose: Elegant MongoDB object modeling for Node.js
+
+define schema
+static method (make own method) carSchema.statics.
+instance (make own method for object) carSchema.methods.
+
+static and instance should not have any side effect on other
+Beware of N+1 problems
+
+
+schema -> service -> route

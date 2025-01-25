@@ -4,7 +4,11 @@ const bcrypt = require('bcrypt');
 const UserSchema = mongoose.Schema({
   email: {
     // Trim and lowercase
-    type: String, required: true, index: { unique: true }, lowercase: true, trim: true,
+    type: String,
+    required: true,
+    index: { unique: true },
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String, required: true, trim: true,
@@ -20,7 +24,7 @@ UserSchema.pre('save', function preSave(next) {
   const user = this;
 
   // Only create a new password hash if the field was updated
-  if(user.isModified('password')) {
+  if (user.isModified('password')) {
     return generateHash(user.password).then(hash => {
       user.password = hash;
       return next();
